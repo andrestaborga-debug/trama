@@ -187,6 +187,7 @@ hr {
 }
 
 .lang-toggle button {
+  display: inline-block !important;
   border: none;
   background: transparent;
   padding: 0.3rem 0.75rem;
