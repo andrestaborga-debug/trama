@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa sistémico · TRAMA</title>
+<link rel="stylesheet" href="../css/styles.css">
+<style>
+  .sysmap {
+    position: relative;
+    width: 100%;
+    height: 600px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin: 1rem 0;
+    overflow: hidden;
+    user-select: none;
+  }
+  .sysmap svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .sysnode {
+    position: absolute;
+    background: var(--surface-alt);
+    border: 2px solid var(--accent);
+    border-radius: 999px;
+    padding: 0.5rem 1rem;
+    font-family: var(--serif);
+    color: var(--ink);
+    transform: translate(-50%, -50%);
+    cursor: grab;
+    z-index: 10;
+    font-size: 0.9rem;
+    max-width: 160px;
+    text-align: center;
+    line-height: 1.2;
+  }
+  .sysnode:active { cursor: grabbing; }
+  .sysnode.selected { background: var(--accent); color: var(--surface); border-color: var(--accent-dark); }
+  .sysnode.linking { box-shadow: 0 0 0 4px rgba(139, 94, 60, 0.25); }
+  .sysnode-actions {
+    position: absolute;
+    top: -36px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    gap: 4px;
+    background: var(--surface);
+    padding: 4px 6px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
+    white-space: nowrap;
+    z-index: 20;
+  }
+  .sysnode.selected .sysnode-actions { display: flex; }
+  .sysnode-actions button {
+    border: none;
+    background: var(--surface-alt);
+    border-radius: 3px;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    color: var(--ink);
+  }
+  .sysnode-actions button:hover { background: var(--accent); color: white; }
+  .controls-bar {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 1rem;
+    background: var(--surface-alt);
+    border-radius: var(--radius);
+  }
+  .help-text {
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-style: italic;
+    margin-left: auto;
+  }
+  .legend-bar {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+  }
+  .legend-bar span { display: inline-flex; align-items: center; gap: 0.4rem; }
+  .legend-line { display: inline-block; width: 30px; height: 2px; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="../index.html" class="brand">
+      <span class="brand-mark">TRAMA</span>
+      <span class="brand-tagline" data-lang="es">Taller de Pensamiento Complejo</span>
+      <span class="brand-tagline" data-lang="en">A Workshop on Complex Thinking</span>
+    </a>
+    <nav class="nav">
+      <a href="../index.html"><span data-lang="es">Programa</span><span data-lang="en">Program</span></a>
+      <a href="../index.html#herramientas"><span data-lang="es">Herramientas</span><span data-lang="en">Tools</span></a>
+      <div class="lang-toggle"><button data-lang="es">ES</button><button data-lang="en">EN</button></div>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="tool-header">
+  <div class="hero-eyebrow"><span data-lang="es">Herramienta · 04</span><span data-lang="en">Tool · 04</span></div>
+  <h1 data-lang="es">Mapa sistémico</h1>
+  <h1 data-lang="en">System map</h1>
+  <p class="muted" data-lang="es">Construye un diagrama de nodos y relaciones del sistema con el que trabajas. Arrastra nodos. Clic para seleccionar.</p>
+  <p class="muted" data-lang="en">Build a node-and-relation diagram of the system you work with. Drag nodes. Click to select.</p>
+</div>
+
+<div class="tool-area">
+
+  <div class="controls-bar">
+    <button class="btn" id="add-node" data-lang="es">+ Nodo</button>
+    <button class="btn" id="add-node-en" data-lang="en">+ Node</button>
+    <button class="btn btn-outline" id="link-mode" data-lang="es">↔ Conectar (selecciona dos)</button>
+    <button class="btn btn-outline" id="link-mode-en" data-lang="en">↔ Connect (select two)</button>
+    <button class="btn btn-outline" id="toggle-link-type" data-lang="es">Tipo: <span id="link-type-label">refuerzo</span></button>
+    <button class="btn btn-outline" id="toggle-link-type-en" data-lang="en">Type: <span id="link-type-label-en">reinforce</span></button>
+    <button class="btn btn-outline" id="export" data-lang="es">⤓ JSON</button>
+    <button class="btn btn-outline" id="export-en" data-lang="en">⤓ JSON</button>
+    <button class="btn btn-outline" id="reset" style="color:#B85450;border-color:#B85450;">
+      <span data-lang="es">↻ Limpiar</span>
+      <span data-lang="en">↻ Clear</span>
+    </button>
+    <span class="help-text" id="help-text"></span>
+  </div>
+
+  <div class="sysmap" id="sysmap">
+    <svg id="svg" viewBox="0 0 800 600" preserveAspectRatio="none">
+      <defs>
+        <marker id="arrow-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#5C7A4F"></path>
+        </marker>
+        <marker id="arrow-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#B85450"></path>
+        </marker>
+      </defs>
+      <g id="links"></g>
+    </svg>
+  </div>
+
+  <div class="legend-bar">
+    <span><span class="legend-line" style="background:#5C7A4F"></span><span data-lang="es">Refuerzo (+)</span><span data-lang="en">Reinforcing (+)</span></span>
+    <span><span class="legend-line" style="background:#B85450"></span><span data-lang="es">Equilibrio (−)</span><span data-lang="en">Balancing (−)</span></span>
+  </div>
+
+  <h3 data-lang="es" style="margin-top:2rem;">Anota tu sistema</h3>
+  <h3 data-lang="en" style="margin-top:2rem;">Note your system</h3>
+  <div class="exercise" style="margin-top:1rem;">
+    <h4 data-lang="es">¿Qué propiedad emerge de las relaciones que mapeaste?</h4>
+    <h4 data-lang="en">What property emerges from the relations you mapped?</h4>
+    <textarea class="textarea-tool" data-journal-key="sysmap-emergencia" placeholder="..."></textarea>
+    <p class="tool-status"></p>
+  </div>
+
+</div>
+</main>
+
+<script src="../js/i18n.js"></script>
+<script src="../js/app.js"></script>
+<script>
+(function(){
+  const SAVE_KEY = 'trama_sysmap';
+  const map = document.getElementById('sysmap');
+  const linksG = document.getElementById('links');
+  let state = { nodes: [], links: [], selected: null, linkMode: false, linkType: 'r' };
+
+  function load() {
+    try {
+      const s = JSON.parse(localStorage.getItem(SAVE_KEY));
+      if (s && s.nodes) { state.nodes = s.nodes; state.links = s.links || []; return; }
+    } catch {}
+    state.nodes = [
+      { id: 1, text: 'Equipo', x: 25, y: 30 },
+      { id: 2, text: 'Cliente', x: 75, y: 30 },
+      { id: 3, text: 'Proceso', x: 50, y: 70 }
+    ];
+    state.links = [
+      { from: 1, to: 2, type: 'r' },
+      { from: 2, to: 3, type: 'r' },
+      { from: 3, to: 1, type: 'b' }
+    ];
+  }
+
+  function save() {
+    localStorage.setItem(SAVE_KEY, JSON.stringify({ nodes: state.nodes, links: state.links }));
+  }
+
+  function render() {
+    map.querySelectorAll('.sysnode').forEach(n => n.remove());
+    linksG.innerHTML = '';
+
+    state.nodes.forEach(node => {
+      const div = document.createElement('div');
+      div.className = 'sysnode';
+      if (state.selected === node.id) div.classList.add('selected');
+      if (state.linkMode) div.classList.add('linking');
+      div.style.left = node.x + '%';
+      div.style.top = node.y + '%';
+      div.innerHTML = `
+        <div class="sysnode-actions">
+          <button data-act="rename">✎</button>
+          <button data-act="delete">⌫</button>
+        </div>
+        <span>${escapeHtml(node.text)}</span>
+      `;
+      div.dataset.id = node.id;
+      attachNodeEvents(div, node);
+      map.appendChild(div);
+    });
+
+    state.links.forEach(link => drawLink(link));
+  }
+
+  function attachNodeEvents(div, node) {
+    let drag = null;
+    div.addEventListener('mousedown', e => {
+      if (e.target.tagName === 'BUTTON') return;
+      if (state.linkMode) {
+        handleLinkSelect(node);
+        return;
+      }
+      const rect = map.getBoundingClientRect();
+      drag = { startX: e.clientX, startY: e.clientY, origX: node.x, origY: node.y, rect };
+      e.preventDefault();
+    });
+    div.addEventListener('click', e => {
+      if (e.target.tagName === 'BUTTON') {
+        const act = e.target.dataset.act;
+        if (act === 'rename') renameNode(node);
+        if (act === 'delete') deleteNode(node);
+        return;
+      }
+      if (!state.linkMode) {
+        state.selected = state.selected === node.id ? null : node.id;
+        render();
+      }
+    });
+    document.addEventListener('mousemove', e => {
+      if (!drag) return;
+      const dx = ((e.clientX - drag.startX) / drag.rect.width) * 100;
+      const dy = ((e.clientY - drag.startY) / drag.rect.height) * 100;
+      node.x = Math.max(5, Math.min(95, drag.origX + dx));
+      node.y = Math.max(5, Math.min(95, drag.origY + dy));
+      div.style.left = node.x + '%';
+      div.style.top = node.y + '%';
+      // redraw links for this node
+      linksG.innerHTML = '';
+      state.links.forEach(l => drawLink(l));
+    });
+    document.addEventListener('mouseup', () => { if (drag) { drag = null; save(); }});
+  }
+
+  function drawLink(link) {
+    const a = state.nodes.find(n => n.id === link.from);
+    const b = state.nodes.find(n => n.id === link.to);
+    if (!a || !b) return;
+    const ax = a.x * 8, ay = a.y * 6;
+    const bx = b.x * 8, by = b.y * 6;
+    const dx = bx - ax, dy = by - ay;
+    const len = Math.sqrt(dx * dx + dy * dy);
+    const ux = dx / len, uy = dy / len;
+    const off = 50;
+    const x1 = ax + ux * off, y1 = ay + uy * off;
+    const x2 = bx - ux * off, y2 = by - uy * off;
+
+    const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+    const px = -uy, py = ux;
+    const bow = 25;
+    const cxQ = mx + px * bow, cyQ = my + py * bow;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', `M ${x1} ${y1} Q ${cxQ} ${cyQ} ${x2} ${y2}`);
+    path.setAttribute('stroke', link.type === 'r' ? '#5C7A4F' : '#B85450');
+    path.setAttribute('stroke-width', '2.5');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('marker-end', link.type === 'r' ? 'url(#arrow-r)' : 'url(#arrow-b)');
+    path.style.cursor = 'pointer';
+    path.addEventListener('click', () => {
+      if (confirm(window.TRAMA_i18n.getLang() === 'es' ? '¿Borrar esta relación?' : 'Delete this link?')) {
+        state.links = state.links.filter(l => l !== link);
+        save(); render();
+      }
+    });
+    linksG.appendChild(path);
+  }
+
+  let linkSrc = null;
+  function handleLinkSelect(node) {
+    if (!linkSrc) {
+      linkSrc = node.id;
+      state.selected = node.id;
+      render();
+      return;
+    }
+    if (linkSrc !== node.id) {
+      state.links.push({ from: linkSrc, to: node.id, type: state.linkType });
+      save();
+    }
+    linkSrc = null;
+    state.linkMode = false;
+    state.selected = null;
+    updateHelp();
+    render();
+  }
+
+  function renameNode(node) {
+    const lang = window.TRAMA_i18n.getLang();
+    const v = prompt(lang === 'es' ? 'Nuevo nombre del nodo:' : 'New node name:', node.text);
+    if (v && v.trim()) { node.text = v.trim(); save(); render(); }
+  }
+
+  function deleteNode(node) {
+    state.nodes = state.nodes.filter(n => n.id !== node.id);
+    state.links = state.links.filter(l => l.from !== node.id && l.to !== node.id);
+    save(); render();
+  }
+
+  function addNode() {
+    const lang = window.TRAMA_i18n.getLang();
+    const text = prompt(lang === 'es' ? 'Nombre del nodo:' : 'Node name:', lang === 'es' ? 'Nuevo' : 'New');
+    if (!text) return;
+    const id = (state.nodes.length ? Math.max(...state.nodes.map(n => n.id)) : 0) + 1;
+    state.nodes.push({ id, text, x: 50, y: 50 });
+    save(); render();
+  }
+
+  function toggleLinkMode() {
+    state.linkMode = !state.linkMode;
+    linkSrc = null;
+    state.selected = null;
+    updateHelp();
+    render();
+  }
+
+  function toggleType() {
+    state.linkType = state.linkType === 'r' ? 'b' : 'r';
+    updateLabels();
+  }
+
+  function updateLabels() {
+    const lang = window.TRAMA_i18n.getLang();
+    const labels = { r: { es: 'refuerzo', en: 'reinforce' }, b: { es: 'equilibrio', en: 'balancing' } };
+    document.getElementById('link-type-label').textContent = labels[state.linkType].es;
+    document.getElementById('link-type-label-en').textContent = labels[state.linkType].en;
+  }
+
+  function updateHelp() {
+    const lang = window.TRAMA_i18n.getLang();
+    const el = document.getElementById('help-text');
+    if (state.linkMode) {
+      el.textContent = lang === 'es' ? 'Selecciona el nodo de origen, luego el de destino' : 'Click source node, then target';
+    } else {
+      el.textContent = lang === 'es' ? 'Arrastra nodos · clic relación para borrar' : 'Drag nodes · click link to delete';
+    }
+  }
+
+  function exportJson() {
+    const blob = new Blob([JSON.stringify({ tool: 'system-map', ...state }, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'trama-mapa-sistemico.json';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function reset() {
+    if (!confirm(window.TRAMA_i18n.getLang() === 'es' ? '¿Limpiar el mapa?' : 'Clear the map?')) return;
+    localStorage.removeItem(SAVE_KEY);
+    load(); render();
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  ['add-node','add-node-en'].forEach(id => document.getElementById(id).addEventListener('click', addNode));
+  ['link-mode','link-mode-en'].forEach(id => document.getElementById(id).addEventListener('click', toggleLinkMode));
+  ['toggle-link-type','toggle-link-type-en'].forEach(id => document.getElementById(id).addEventListener('click', toggleType));
+  ['export','export-en'].forEach(id => document.getElementById(id).addEventListener('click', exportJson));
+  document.getElementById('reset').addEventListener('click', reset);
+  document.addEventListener('langchange', () => { updateLabels(); updateHelp(); });
+
+  load();
+  updateLabels();
+  updateHelp();
+  render();
+})();
+</script>
+</body>
+</html>

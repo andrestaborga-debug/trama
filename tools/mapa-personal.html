@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa personal de complejidad · TRAMA</title>
+<link rel="stylesheet" href="../css/styles.css">
+<style>
+  .canvas-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+  @media (min-width: 720px) {
+    .canvas-grid {
+      grid-template-columns: 2fr 1fr;
+      grid-template-rows: auto auto auto;
+      grid-template-areas:
+        "z1 z2"
+        "z3 z4"
+        "z5 z5"
+        "z6 z7";
+    }
+    .zone-1 { grid-area: z1; }
+    .zone-2 { grid-area: z2; }
+    .zone-3 { grid-area: z3; }
+    .zone-4 { grid-area: z4; }
+    .zone-5 { grid-area: z5; }
+    .zone-6 { grid-area: z6; }
+    .zone-7 { grid-area: z7; }
+  }
+  .zone {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+  }
+  .zone-num {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+  }
+  .zone-title {
+    font-family: var(--serif);
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 0.3rem;
+    line-height: 1.2;
+  }
+  .zone-hint {
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-style: italic;
+    margin-bottom: 0.75rem;
+  }
+  .zone textarea {
+    flex: 1;
+    width: 100%;
+    min-height: 110px;
+    padding: 0.75rem;
+    font-family: var(--serif);
+    font-size: 1rem;
+    line-height: 1.5;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--ink);
+    resize: vertical;
+  }
+  .zone textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(139, 94, 60, 0.1);
+  }
+  .zone-5 { background: var(--surface-alt); border-color: var(--accent); }
+  .print-frame {
+    background: var(--surface-alt);
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    text-align: center;
+    margin: 2rem 0;
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--ink-soft);
+  }
+  @media print {
+    .site-header, .tool-header, .tool-controls, .print-frame { display: none !important; }
+    .zone { break-inside: avoid; box-shadow: none; }
+    body { background: white; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="../index.html" class="brand">
+      <span class="brand-mark">TRAMA</span>
+      <span class="brand-tagline" data-lang="es">Taller de Pensamiento Complejo</span>
+      <span class="brand-tagline" data-lang="en">A Workshop on Complex Thinking</span>
+    </a>
+    <nav class="nav">
+      <a href="../index.html"><span data-lang="es">Programa</span><span data-lang="en">Program</span></a>
+      <a href="../index.html#herramientas"><span data-lang="es">Herramientas</span><span data-lang="en">Tools</span></a>
+      <div class="lang-toggle"><button data-lang="es">ES</button><button data-lang="en">EN</button></div>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="tool-header">
+  <div class="hero-eyebrow"><span data-lang="es">Herramienta · 07</span><span data-lang="en">Tool · 07</span></div>
+  <h1 data-lang="es">Mapa personal de complejidad</h1>
+  <h1 data-lang="en">Personal complexity map</h1>
+  <p class="muted" data-lang="es">Tu lienzo de síntesis. Siete zonas. Llenarlas no requiere precisión: requiere honestidad.</p>
+  <p class="muted" data-lang="en">Your synthesis canvas. Seven zones. Filling them does not require precision: it requires honesty.</p>
+</div>
+
+<div class="tool-area">
+
+  <div class="print-frame">
+    <span data-lang="es">Tu trabajo se guarda automáticamente. Puedes exportarlo o imprimirlo cuando quieras.</span>
+    <span data-lang="en">Your work saves automatically. Export or print when you want.</span>
+  </div>
+
+  <div class="canvas-grid">
+
+    <div class="zone zone-1">
+      <div class="zone-num"><span data-lang="es">Zona 01</span><span data-lang="en">Zone 01</span></div>
+      <div class="zone-title" data-lang="es">Mi pregunta-guía hoy</div>
+      <div class="zone-title" data-lang="en">My guiding question today</div>
+      <div class="zone-hint" data-lang="es">Cómo la dirías ahora — no como la dijiste en la sesión 01.</div>
+      <div class="zone-hint" data-lang="en">How you would say it now — not as you said it in session 01.</div>
+      <textarea data-journal-key="mp-z1" placeholder="¿Cómo…?"></textarea>
+    </div>
+
+    <div class="zone zone-2">
+      <div class="zone-num"><span data-lang="es">Zona 02</span><span data-lang="en">Zone 02</span></div>
+      <div class="zone-title" data-lang="es">Mis 3 principios más activos</div>
+      <div class="zone-title" data-lang="en">My 3 most active principles</div>
+      <div class="zone-hint" data-lang="es">Cuáles te están sirviendo más para pensar.</div>
+      <div class="zone-hint" data-lang="en">Which are serving you most to think.</div>
+      <textarea data-journal-key="mp-z2" placeholder="1.&#10;2.&#10;3."></textarea>
+    </div>
+
+    <div class="zone zone-3">
+      <div class="zone-num"><span data-lang="es">Zona 03</span><span data-lang="en">Zone 03</span></div>
+      <div class="zone-title" data-lang="es">Mis 2 dialógicas a habitar</div>
+      <div class="zone-title" data-lang="en">My 2 dialogics to inhabit</div>
+      <div class="zone-hint" data-lang="es">Tensiones que ya no quieres resolver, sino regular.</div>
+      <div class="zone-hint" data-lang="en">Tensions you no longer want to resolve, but regulate.</div>
+      <textarea data-journal-key="mp-z3" placeholder="A. ____ ↔ ____&#10;B. ____ ↔ ____"></textarea>
+    </div>
+
+    <div class="zone zone-4">
+      <div class="zone-num"><span data-lang="es">Zona 04</span><span data-lang="en">Zone 04</span></div>
+      <div class="zone-title" data-lang="es">Mi bucle a intervenir</div>
+      <div class="zone-title" data-lang="en">My loop to intervene</div>
+      <div class="zone-hint" data-lang="es">El sistema recursivo que vas a alterar.</div>
+      <div class="zone-hint" data-lang="en">The recursive system you will alter.</div>
+      <textarea data-journal-key="mp-z4" placeholder="A → B → C → A"></textarea>
+    </div>
+
+    <div class="zone zone-5">
+      <div class="zone-num"><span data-lang="es">Zona 05 · centro</span><span data-lang="en">Zone 05 · center</span></div>
+      <div class="zone-title" data-lang="es">Lo que se desplazó en mí</div>
+      <div class="zone-title" data-lang="en">What shifted in me</div>
+      <div class="zone-hint" data-lang="es">Una frase. La que aún resuena cuando todo lo demás se borre.</div>
+      <div class="zone-hint" data-lang="en">One sentence. The one still resonating after everything else fades.</div>
+      <textarea data-journal-key="mp-z5" placeholder="..."></textarea>
+    </div>
+
+    <div class="zone zone-6">
+      <div class="zone-num"><span data-lang="es">Zona 06</span><span data-lang="en">Zone 06</span></div>
+      <div class="zone-title" data-lang="es">Mis cegueras detectadas</div>
+      <div class="zone-title" data-lang="en">My detected blindspots</div>
+      <div class="zone-hint" data-lang="es">Qué punto ciego sabes que tienes.</div>
+      <div class="zone-hint" data-lang="en">The blindspot you know you have.</div>
+      <textarea data-journal-key="mp-z6" placeholder="..."></textarea>
+    </div>
+
+    <div class="zone zone-7">
+      <div class="zone-num"><span data-lang="es">Zona 07</span><span data-lang="en">Zone 07</span></div>
+      <div class="zone-title" data-lang="es">Mi compromiso a 3 meses</div>
+      <div class="zone-title" data-lang="en">My 3-month commitment</div>
+      <div class="zone-hint" data-lang="es">Una sola acción concreta. Día y hora del primer paso.</div>
+      <div class="zone-hint" data-lang="en">One concrete action. Day and time of first step.</div>
+      <textarea data-journal-key="mp-z7" placeholder="..."></textarea>
+    </div>
+
+  </div>
+
+  <div class="tool-controls" style="margin-top:2rem;">
+    <button class="btn" id="export-md" data-lang="es">⤓ Exportar como Markdown</button>
+    <button class="btn" id="export-md-en" data-lang="en">⤓ Export as Markdown</button>
+    <button class="btn btn-outline" id="print" data-lang="es">⎙ Imprimir</button>
+    <button class="btn btn-outline" id="print-en" data-lang="en">⎙ Print</button>
+  </div>
+
+</div>
+</main>
+
+<script src="../js/i18n.js"></script>
+<script src="../js/app.js"></script>
+<script>
+(function(){
+  const ZONES = [
+    { key: 'mp-z1', es: 'Mi pregunta-guía hoy', en: 'My guiding question today' },
+    { key: 'mp-z2', es: 'Mis 3 principios más activos', en: 'My 3 most active principles' },
+    { key: 'mp-z3', es: 'Mis 2 dialógicas a habitar', en: 'My 2 dialogics to inhabit' },
+    { key: 'mp-z4', es: 'Mi bucle a intervenir', en: 'My loop to intervene' },
+    { key: 'mp-z5', es: 'Lo que se desplazó en mí', en: 'What shifted in me' },
+    { key: 'mp-z6', es: 'Mis cegueras detectadas', en: 'My detected blindspots' },
+    { key: 'mp-z7', es: 'Mi compromiso a 3 meses', en: 'My 3-month commitment' }
+  ];
+
+  function exportMd() {
+    const lang = window.TRAMA_i18n.getLang();
+    let md = lang === 'es'
+      ? `# Mi mapa personal de complejidad · TRAMA\n\n_${new Date().toLocaleDateString()}_\n\n`
+      : `# My personal complexity map · TRAMA\n\n_${new Date().toLocaleDateString()}_\n\n`;
+    ZONES.forEach((z, i) => {
+      const v = localStorage.getItem('trama_journal_' + z.key) || '';
+      md += `## ${i + 1}. ${z[lang]}\n\n${v || '_(en blanco)_'}\n\n`;
+    });
+    const blob = new Blob([md], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'trama-mapa-personal.md';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  ['export-md','export-md-en'].forEach(id => document.getElementById(id).addEventListener('click', exportMd));
+  ['print','print-en'].forEach(id => document.getElementById(id).addEventListener('click', () => window.print()));
+})();
+</script>
+</body>
+</html>

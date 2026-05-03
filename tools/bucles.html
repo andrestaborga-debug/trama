@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Constructor de bucles · TRAMA</title>
+<link rel="stylesheet" href="../css/styles.css">
+<style>
+  .loop-canvas {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    max-width: 600px;
+    margin: 2rem auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .loop-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  .node {
+    position: absolute;
+    width: 110px;
+    min-height: 70px;
+    background: var(--surface-alt);
+    border: 2px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 0.5rem;
+    text-align: center;
+    font-family: var(--serif);
+    color: var(--ink);
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+  }
+  .node:hover { box-shadow: var(--shadow-md); border-color: var(--accent-dark); }
+  .node.editing { background: var(--surface); }
+  .node textarea {
+    width: 100%;
+    border: none;
+    background: transparent;
+    text-align: center;
+    font-family: var(--serif);
+    font-size: 0.9rem;
+    resize: none;
+    outline: none;
+    color: var(--ink);
+  }
+  .node-num {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--surface);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+  }
+  .node-controls {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .legend {
+    background: var(--surface-alt);
+    padding: 1rem;
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    margin-top: 1rem;
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="../index.html" class="brand">
+      <span class="brand-mark">TRAMA</span>
+      <span class="brand-tagline" data-lang="es">Taller de Pensamiento Complejo</span>
+      <span class="brand-tagline" data-lang="en">A Workshop on Complex Thinking</span>
+    </a>
+    <nav class="nav">
+      <a href="../index.html"><span data-lang="es">Programa</span><span data-lang="en">Program</span></a>
+      <a href="../index.html#herramientas"><span data-lang="es">Herramientas</span><span data-lang="en">Tools</span></a>
+      <div class="lang-toggle"><button data-lang="es">ES</button><button data-lang="en">EN</button></div>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="tool-header">
+  <div class="hero-eyebrow"><span data-lang="es">Herramienta · 03</span><span data-lang="en">Tool · 03</span></div>
+  <h1 data-lang="es">Constructor de bucles recursivos</h1>
+  <h1 data-lang="en">Recursive loop builder</h1>
+  <p class="muted" data-lang="es">Visualiza un fenómeno como bucle: causas que son efectos de sus propios efectos. Edita los nodos haciendo clic.</p>
+  <p class="muted" data-lang="en">Visualize a phenomenon as a loop: causes that are effects of their own effects. Edit nodes by clicking.</p>
+</div>
+
+<div class="tool-area">
+
+  <div class="loop-canvas" id="canvas">
+    <svg class="loop-svg" id="svg" viewBox="0 0 600 600" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <marker id="arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"></path>
+        </marker>
+      </defs>
+      <g id="arrows"></g>
+    </svg>
+  </div>
+
+  <div class="node-controls">
+    <button class="btn" id="add-node" data-lang="es">+ Añadir nodo</button>
+    <button class="btn" id="add-node-en" data-lang="en">+ Add node</button>
+    <button class="btn btn-outline" id="save-loop" data-lang="es">⤓ Exportar JSON</button>
+    <button class="btn btn-outline" id="save-loop-en" data-lang="en">⤓ Export JSON</button>
+    <button class="btn btn-outline" id="reset-loop" style="margin-left:auto;color:#B85450;border-color:#B85450;">
+      <span data-lang="es">↻ Reiniciar</span>
+      <span data-lang="en">↻ Reset</span>
+    </button>
+  </div>
+
+  <div class="legend">
+    <div data-lang="es"><strong>Cómo usar:</strong> haz clic en cualquier nodo para editarlo. Las flechas muestran el bucle: el último nodo regresa al primero, cerrando el ciclo. Empieza con tres nodos y observa cómo cada uno produce y es producido por los demás.</div>
+    <div data-lang="en"><strong>How to use:</strong> click any node to edit it. The arrows show the loop: the last node returns to the first, closing the cycle. Start with three nodes and observe how each produces and is produced by the others.</div>
+  </div>
+
+  <h3 data-lang="es" style="margin-top:2rem;">Reflexión sobre el bucle</h3>
+  <h3 data-lang="en" style="margin-top:2rem;">Reflection on the loop</h3>
+
+  <div class="exercise" style="margin-top:1rem;">
+    <h4 data-lang="es">¿Qué lo refuerza? ¿Qué podría amortiguarlo?</h4>
+    <h4 data-lang="en">What reinforces it? What could dampen it?</h4>
+    <textarea class="textarea-tool" data-journal-key="bucles-reflexion" placeholder="..."></textarea>
+    <p class="tool-status"></p>
+  </div>
+
+</div>
+</main>
+
+<script src="../js/i18n.js"></script>
+<script src="../js/app.js"></script>
+<script>
+(function(){
+  const canvas = document.getElementById('canvas');
+  const arrowsG = document.getElementById('arrows');
+  const SAVE_KEY = 'trama_loop_nodes';
+  const DEFAULT_NODES = {
+    es: ['Cultura organizacional rígida', 'Resistencia al cambio', 'Iniciativas que fracasan', 'Refuerzo de la rigidez'],
+    en: ['Rigid organizational culture', 'Resistance to change', 'Failing initiatives', 'Reinforcement of rigidity']
+  };
+
+  let nodes = []; // [{id, text, x, y}]
+
+  function loadNodes() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(SAVE_KEY));
+      if (Array.isArray(saved) && saved.length) { nodes = saved; return; }
+    } catch {}
+    const lang = window.TRAMA_i18n.getLang();
+    nodes = DEFAULT_NODES[lang].map((text, i) => ({ id: i + 1, text, x: 0, y: 0 }));
+    layoutCircle();
+  }
+
+  function saveNodes() {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(nodes));
+  }
+
+  function layoutCircle() {
+    const cx = 50, cy = 50, r = 35;
+    const n = nodes.length;
+    nodes.forEach((node, i) => {
+      const angle = (-Math.PI / 2) + (i * 2 * Math.PI / n);
+      node.x = cx + r * Math.cos(angle);
+      node.y = cy + r * Math.sin(angle);
+    });
+    saveNodes();
+  }
+
+  function render() {
+    canvas.querySelectorAll('.node').forEach(n => n.remove());
+    arrowsG.innerHTML = '';
+
+    nodes.forEach((node, i) => {
+      const div = document.createElement('div');
+      div.className = 'node';
+      div.style.left = node.x + '%';
+      div.style.top = node.y + '%';
+      div.dataset.id = node.id;
+      div.innerHTML = `<span class="node-num">${i + 1}</span><span class="node-text">${escapeHtml(node.text)}</span>`;
+      div.addEventListener('click', () => editNode(node.id));
+      canvas.appendChild(div);
+    });
+
+    // Arrows between consecutive nodes (loop)
+    for (let i = 0; i < nodes.length; i++) {
+      const a = nodes[i], b = nodes[(i + 1) % nodes.length];
+      drawArrow(a, b);
+    }
+  }
+
+  function drawArrow(a, b) {
+    const cx = 300, cy = 300, scale = 6; // svg units per percent
+    // convert percent to svg coords
+    const ax = a.x * 6, ay = a.y * 6;
+    const bx = b.x * 6, by = b.y * 6;
+    // shorten so arrow doesn't overlap node
+    const dx = bx - ax, dy = by - ay;
+    const len = Math.sqrt(dx * dx + dy * dy);
+    const ux = dx / len, uy = dy / len;
+    const offset = 60;
+    const x1 = ax + ux * offset, y1 = ay + uy * offset;
+    const x2 = bx - ux * offset, y2 = by - uy * offset;
+
+    // bowed path
+    const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+    const px = -uy, py = ux; // perpendicular
+    const bow = 30;
+    const cxQ = mx + px * bow, cyQ = my + py * bow;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', `M ${x1} ${y1} Q ${cxQ} ${cyQ} ${x2} ${y2}`);
+    path.setAttribute('stroke', '#8B5E3C');
+    path.setAttribute('stroke-width', '2');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('marker-end', 'url(#arrowhead)');
+    arrowsG.appendChild(path);
+  }
+
+  function editNode(id) {
+    const div = canvas.querySelector(`.node[data-id="${id}"]`);
+    if (!div || div.classList.contains('editing')) return;
+    const node = nodes.find(n => n.id === id);
+    div.classList.add('editing');
+    div.innerHTML = `<span class="node-num">${nodes.indexOf(node) + 1}</span><textarea>${escapeHtml(node.text)}</textarea>`;
+    const ta = div.querySelector('textarea');
+    ta.focus();
+    ta.select();
+    function commit() {
+      node.text = ta.value || '...';
+      saveNodes();
+      render();
+    }
+    ta.addEventListener('blur', commit);
+    ta.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ta.blur(); }
+      if (e.key === 'Escape') { render(); }
+    });
+  }
+
+  function addNode() {
+    if (nodes.length >= 8) return;
+    const lang = window.TRAMA_i18n.getLang();
+    const id = (nodes.length ? Math.max(...nodes.map(n => n.id)) : 0) + 1;
+    nodes.push({ id, text: lang === 'es' ? 'Nuevo nodo' : 'New node', x: 50, y: 50 });
+    layoutCircle();
+    render();
+  }
+
+  function exportJson() {
+    const data = { workshop: 'TRAMA', tool: 'recursive-loop', nodes };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'trama-bucle.json';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function reset() {
+    if (!confirm(window.TRAMA_i18n.getLang() === 'es' ? '¿Reiniciar el bucle?' : 'Reset the loop?')) return;
+    localStorage.removeItem(SAVE_KEY);
+    loadNodes();
+    render();
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  document.getElementById('add-node').addEventListener('click', addNode);
+  document.getElementById('add-node-en').addEventListener('click', addNode);
+  document.getElementById('save-loop').addEventListener('click', exportJson);
+  document.getElementById('save-loop-en').addEventListener('click', exportJson);
+  document.getElementById('reset-loop').addEventListener('click', reset);
+
+  loadNodes();
+  render();
+})();
+</script>
+</body>
+</html>

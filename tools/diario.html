@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diario reflexivo · TRAMA</title>
+<link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="../index.html" class="brand">
+      <span class="brand-mark">TRAMA</span>
+      <span class="brand-tagline" data-lang="es">Taller de Pensamiento Complejo</span>
+      <span class="brand-tagline" data-lang="en">A Workshop on Complex Thinking</span>
+    </a>
+    <nav class="nav">
+      <a href="../index.html"><span data-lang="es">Programa</span><span data-lang="en">Program</span></a>
+      <a href="../index.html#herramientas"><span data-lang="es">Herramientas</span><span data-lang="en">Tools</span></a>
+      <div class="lang-toggle"><button data-lang="es">ES</button><button data-lang="en">EN</button></div>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="tool-header">
+  <div class="hero-eyebrow"><span data-lang="es">Herramienta · 01</span><span data-lang="en">Tool · 01</span></div>
+  <h1 data-lang="es">Diario reflexivo</h1>
+  <h1 data-lang="en">Reflective journal</h1>
+  <p class="muted" data-lang="es">Todas las entradas que escribiste en los ejercicios del taller, en un solo lugar. Editables, exportables, tuyas.</p>
+  <p class="muted" data-lang="en">All the entries you wrote in the workshop exercises, in one place. Editable, exportable, yours.</p>
+</div>
+
+<div class="tool-area">
+
+  <div class="tool-controls" style="margin-bottom:2rem;">
+    <button class="btn" id="export-md" data-lang="es">⤓ Exportar como Markdown</button>
+    <button class="btn" id="export-md-en" data-lang="en">⤓ Export as Markdown</button>
+    <button class="btn btn-outline" id="export-json" data-lang="es">⤓ Exportar como JSON</button>
+    <button class="btn btn-outline" id="export-json-en" data-lang="en">⤓ Export as JSON</button>
+    <button class="btn btn-outline" id="clear-all" style="margin-left:auto;color:#B85450;border-color:#B85450;">
+      <span data-lang="es">⌫ Borrar todo</span>
+      <span data-lang="en">⌫ Delete all</span>
+    </button>
+  </div>
+
+  <div id="entries-container">
+    <div class="objectives" id="empty-state" style="text-align:center;padding:3rem;">
+      <p data-lang="es" class="muted">Aún no has escrito ninguna entrada. Empieza por la <a href="../sessions/sesion-01.html">sesión 01</a>.</p>
+      <p data-lang="en" class="muted">You haven't written any entries yet. Start with <a href="../sessions/sesion-01.html">session 01</a>.</p>
+    </div>
+  </div>
+
+</div>
+
+</main>
+
+<script src="../js/i18n.js"></script>
+<script src="../js/app.js"></script>
+<script>
+(function(){
+  const PREFIX = 'trama_journal_';
+  const ENTRY_LABELS = {
+    's01-pregunta-guia': { es: 'S01 · Tu pregunta-guía personal', en: 'S01 · Your personal guiding question' },
+    's01-inventario': { es: 'S01 · Inventario de tu modo de pensar', en: 'S01 · Inventory of your way of thinking' },
+    's02-tres-problemas': { es: 'S02 · Tres problemas planetarios', en: 'S02 · Three planetary problems' },
+    's02-complicado-complejo': { es: 'S02 · ¿Complicado o complejo?', en: 'S02 · Complicated or complex?' },
+    's03-tres-operaciones': { es: 'S03 · Detector de las tres operaciones', en: 'S03 · Three-operation detector' },
+    's03-legitimo': { es: 'S03 · Cuándo es legítimo simplificar', en: 'S03 · When simplifying is legitimate' },
+    's04-tres-errores': { es: 'S04 · Tres errores recientes', en: 'S04 · Three recent errors' },
+    's04-brujula': { es: 'S04 · Brújula de cegueras', en: 'S04 · Blindspot compass' },
+    's05-par-dialogico': { es: 'S05 · Tu par dialógico', en: 'S05 · Your dialogic pair' },
+    's05-decision-dialogica': { es: 'S05 · Una decisión dialógica', en: 'S05 · A dialogic decision' },
+    's06-bucle': { es: 'S06 · Detectar el bucle', en: 'S06 · Detecting the loop' },
+    's06-intervenciones': { es: 'S06 · Tres puntos de intervención', en: 'S06 · Three intervention points' },
+    's07-caso-holograma': { es: 'S07 · El caso como holograma', en: 'S07 · The case as hologram' },
+    's07-parte-todo': { es: 'S07 · Trabajar el todo por la parte', en: 'S07 · Working the whole through the part' },
+    's08-mapeo-tetra': { es: 'S08 · Mapeo tetragrámatico', en: 'S08 · Tetragramatic mapping' },
+    's08-dosis': { es: 'S08 · La dosis de desorden', en: 'S08 · The dose of disorder' },
+    's09-sistema': { es: 'S09 · Tu sistema cotidiano', en: 'S09 · Your everyday system' },
+    's09-frontera': { es: 'S09 · La frontera elegida', en: 'S09 · The chosen boundary' },
+    's10-emergencias': { es: 'S10 · Inventario de emergencias', en: 'S10 · Emergence inventory' },
+    's10-mas-menos': { es: 'S10 · Más y menos', en: 'S10 · More and less' },
+    's11-eco': { es: 'S11 · Tu eco profesional', en: 'S11 · Your professional eco' },
+    's11-actualizar': { es: 'S11 · Una dependencia a actualizar', en: 'S11 · A dependency to refresh' },
+    's12-sujeto': { es: 'S12 · El sujeto invisible', en: 'S12 · The invisible subject' },
+    's12-reliance': { es: 'S12 · Un acto de reliance', en: 'S12 · An act of reliance' },
+    's13-pertinencia': { es: 'S13 · Diagnóstico de pertinencia', en: 'S13 · Pertinence diagnostic' },
+    's13-reformular': { es: 'S13 · Reformular una pregunta', en: 'S13 · Reformulate a question' },
+    's14-humano': { es: 'S14 · El humano de tu trabajo', en: 'S14 · The human of your work' },
+    's14-sapiens-demens': { es: 'S14 · Sapiens y demens', en: 'S14 · Sapiens and demens' },
+    's15-huellas': { es: 'S15 · Huellas planetarias', en: 'S15 · Planetary traces' },
+    's15-responsabilidad': { es: 'S15 · Responsabilidad situada', en: 'S15 · Situated responsibility' },
+    's16-tres-no-saber': { es: 'S16 · Tres tipos de no-saber', en: 'S16 · Three kinds of not-knowing' },
+    's16-estrategia': { es: 'S16 · De programa a estrategia', en: 'S16 · From program to strategy' },
+    's17-tetra-org': { es: 'S17 · Diagnóstico tetragrámatico', en: 'S17 · Tetragramatic diagnosis' },
+    's17-intervencion': { es: 'S17 · Una intervención hologramática', en: 'S17 · A hologramatic intervention' },
+    's18-monocausa': { es: 'S18 · Tu monocausalidad favorita', en: 'S18 · Your favorite monocausality' },
+    's18-antagonico': { es: 'S18 · Un par antagónico-complementario', en: 'S18 · An antagonistic-complementary pair' },
+    's19-formas': { es: 'S19 · ¿A quién formas?', en: 'S19 · Whom do you form?' },
+    's19-micro': { es: 'S19 · Un acto pedagógico complejo', en: 'S19 · A complex pedagogical act' },
+    's20-decision': { es: 'S20 · Diagnóstico de una decisión', en: 'S20 · Decision diagnosis' },
+    's20-protocolo': { es: 'S20 · Tu protocolo personal', en: 'S20 · Your personal protocol' },
+    's21-antes-ahora': { es: 'S21 · Antes y ahora', en: 'S21 · Before and now' },
+    's21-marcadores': { es: 'S21 · Tres marcadores en ti', en: 'S21 · Three markers in yourself' },
+    's22-antagonista': { es: 'S22 · Comprender a tu antagonista', en: 'S22 · Understanding your antagonist' },
+    's22-etiqueta': { es: 'S22 · Una etiqueta tuya', en: 'S22 · A label of yours' },
+    's23-tres-frases': { es: 'S23 · Tres frases para empezar', en: 'S23 · Three sentences to begin' },
+    's24-compromiso': { es: 'S24 · Tu compromiso', en: 'S24 · Your commitment' },
+  };
+
+  function getEntries() {
+    const entries = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key.startsWith(PREFIX)) {
+        const id = key.replace(PREFIX, '');
+        const value = localStorage.getItem(key);
+        if (value && value.trim()) {
+          entries.push({ id, value, label: ENTRY_LABELS[id] || { es: id, en: id } });
+        }
+      }
+    }
+    entries.sort((a, b) => a.id.localeCompare(b.id));
+    return entries;
+  }
+
+  function render() {
+    const entries = getEntries();
+    const container = document.getElementById('entries-container');
+    const empty = document.getElementById('empty-state');
+    if (entries.length === 0) {
+      empty.style.display = 'block';
+      container.innerHTML = '';
+      container.appendChild(empty);
+      return;
+    }
+    empty.style.display = 'none';
+    container.innerHTML = '';
+    const lang = window.TRAMA_i18n.getLang();
+    entries.forEach(entry => {
+      const div = document.createElement('div');
+      div.className = 'exercise';
+      div.innerHTML = `
+        <h4>${entry.label[lang]}</h4>
+        <textarea class="textarea-tool" data-journal-key="${entry.id}">${entry.value.replace(/</g, '&lt;')}</textarea>
+        <p class="tool-status"></p>
+      `;
+      container.appendChild(div);
+    });
+    if (window.TRAMA && typeof window.TRAMA.loadProgress === 'function') {
+      document.querySelectorAll('[data-journal-key]').forEach(area => {
+        const key = PREFIX + area.dataset.journalKey;
+        const status = area.parentElement.querySelector('.tool-status');
+        let timer;
+        area.addEventListener('input', () => {
+          clearTimeout(timer);
+          timer = setTimeout(() => {
+            localStorage.setItem(key, area.value);
+            if (status) status.textContent = lang === 'es'
+              ? '✓ Guardado · ' + new Date().toLocaleTimeString()
+              : '✓ Saved · ' + new Date().toLocaleTimeString();
+          }, 500);
+        });
+      });
+    }
+  }
+
+  function exportMarkdown() {
+    const entries = getEntries();
+    const lang = window.TRAMA_i18n.getLang();
+    let md = lang === 'es'
+      ? `# Diario reflexivo · TRAMA\n\n_Exportado el ${new Date().toLocaleDateString()}_\n\n`
+      : `# Reflective Journal · TRAMA\n\n_Exported on ${new Date().toLocaleDateString()}_\n\n`;
+    entries.forEach(entry => {
+      md += `## ${entry.label[lang]}\n\n${entry.value}\n\n---\n\n`;
+    });
+    download(md, 'trama-diario.md', 'text/markdown');
+  }
+
+  function exportJson() {
+    const entries = getEntries();
+    const lang = window.TRAMA_i18n.getLang();
+    const data = {
+      workshop: 'TRAMA',
+      exported_at: new Date().toISOString(),
+      lang,
+      entries: entries.map(e => ({ id: e.id, label: e.label[lang], value: e.value }))
+    };
+    download(JSON.stringify(data, null, 2), 'trama-diario.json', 'application/json');
+  }
+
+  function download(content, filename, mime) {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function clearAll() {
+    const lang = window.TRAMA_i18n.getLang();
+    const msg = lang === 'es'
+      ? '¿Estás seguro? Se borrarán TODAS tus entradas del diario. Esto no se puede deshacer.'
+      : 'Are you sure? ALL your journal entries will be deleted. This cannot be undone.';
+    if (!confirm(msg)) return;
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k.startsWith(PREFIX)) keys.push(k);
+    }
+    keys.forEach(k => localStorage.removeItem(k));
+    render();
+  }
+
+  document.getElementById('export-md').addEventListener('click', exportMarkdown);
+  document.getElementById('export-md-en').addEventListener('click', exportMarkdown);
+  document.getElementById('export-json').addEventListener('click', exportJson);
+  document.getElementById('export-json-en').addEventListener('click', exportJson);
+  document.getElementById('clear-all').addEventListener('click', clearAll);
+  document.addEventListener('langchange', render);
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brújula de cegueras · TRAMA</title>
+<link rel="stylesheet" href="../css/styles.css">
+<style>
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .q-text {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    line-height: 1.5;
+    color: var(--ink);
+    margin-bottom: 1rem;
+  }
+  .scale {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .scale-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+    font-style: italic;
+  }
+  .scale-options {
+    display: flex;
+    flex: 1;
+    gap: 0.4rem;
+  }
+  .scale-options label {
+    flex: 1;
+    text-align: center;
+    padding: 0.5rem;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    background: var(--bg);
+    transition: all 0.15s;
+    font-family: var(--mono);
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .scale-options label:hover { border-color: var(--accent); }
+  .scale-options input { display: none; }
+  .scale-options input:checked + span {
+    background: var(--ink);
+    color: var(--surface);
+    border-radius: var(--radius);
+    padding: 0.5rem;
+    margin: -0.5rem;
+  }
+  .scale-options label:has(input:checked) { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+
+  .results {
+    background: var(--surface-alt);
+    border-radius: var(--radius);
+    padding: 2rem;
+    margin-top: 2rem;
+    display: none;
+  }
+  .results.show { display: block; }
+  .result-bar {
+    margin-bottom: 1.5rem;
+  }
+  .result-bar-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.4rem;
+    font-family: var(--serif);
+  }
+  .result-bar-track {
+    height: 12px;
+    background: var(--surface);
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .result-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #5C7A4F, var(--accent), #B85450);
+    transition: width 0.6s ease;
+  }
+  .interpretation {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-family: var(--serif);
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="../index.html" class="brand">
+      <span class="brand-mark">TRAMA</span>
+      <span class="brand-tagline" data-lang="es">Taller de Pensamiento Complejo</span>
+      <span class="brand-tagline" data-lang="en">A Workshop on Complex Thinking</span>
+    </a>
+    <nav class="nav">
+      <a href="../index.html"><span data-lang="es">Programa</span><span data-lang="en">Program</span></a>
+      <a href="../index.html#herramientas"><span data-lang="es">Herramientas</span><span data-lang="en">Tools</span></a>
+      <div class="lang-toggle"><button data-lang="es">ES</button><button data-lang="en">EN</button></div>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="tool-header">
+  <div class="hero-eyebrow"><span data-lang="es">Herramienta · 05</span><span data-lang="en">Tool · 05</span></div>
+  <h1 data-lang="es">Brújula de cegueras</h1>
+  <h1 data-lang="en">Blindspot compass</h1>
+  <p class="muted" data-lang="es">No es una prueba: es un espejo. Quince afirmaciones. Responde con honestidad — preferiblemente la incómoda.</p>
+  <p class="muted" data-lang="en">Not a test: a mirror. Fifteen statements. Answer honestly — preferably with the uncomfortable answer.</p>
+</div>
+
+<div class="tool-area">
+
+  <div id="form"></div>
+
+  <div class="tool-controls" style="margin-top:2rem;">
+    <button class="btn btn-accent" id="compute" data-lang="es">Ver mi diagnóstico</button>
+    <button class="btn btn-accent" id="compute-en" data-lang="en">See my diagnostic</button>
+    <button class="btn btn-outline" id="reset" data-lang="es">↻ Reiniciar</button>
+    <button class="btn btn-outline" id="reset-en" data-lang="en">↻ Reset</button>
+  </div>
+
+  <div class="results" id="results">
+    <h3 style="margin-top:0;" data-lang="es">Tus tres dimensiones de ceguera</h3>
+    <h3 style="margin-top:0;" data-lang="en">Your three dimensions of blindness</h3>
+    <div id="bars"></div>
+    <div class="interpretation" id="interpretation"></div>
+  </div>
+
+  <h3 data-lang="es" style="margin-top:2rem;">Anota</h3>
+  <h3 data-lang="en" style="margin-top:2rem;">Note</h3>
+  <div class="exercise">
+    <h4 data-lang="es">¿Qué de este diagnóstico te resuena? ¿Qué te incomoda?</h4>
+    <h4 data-lang="en">What of this diagnostic resonates? What makes you uncomfortable?</h4>
+    <textarea class="textarea-tool" data-journal-key="cegueras-resonancia" placeholder="..."></textarea>
+    <p class="tool-status"></p>
+  </div>
+
+</div>
+</main>
+
+<script src="../js/i18n.js"></script>
+<script src="../js/app.js"></script>
+<script>
+(function(){
+  const SAVE = 'trama_brujula_v1';
+  // cat: 'p' (perceptiva), 'i' (intelectual), 'g' (paradigmática)
+  const QUESTIONS = [
+    { cat: 'p', es: 'A menudo descubro tarde algo que estaba a la vista.', en: 'I often realize late something that was in plain sight.' },
+    { cat: 'p', es: 'Mi memoria de eventos profesionales suele ser más fiel a mi versión que a los hechos.', en: 'My memory of professional events tends to be more faithful to my version than to the facts.' },
+    { cat: 'p', es: 'Tiendo a notar lo que ya esperaba notar, no lo nuevo.', en: 'I tend to notice what I already expected to notice, not the new.' },
+    { cat: 'p', es: 'Cuando reviso una decisión, encuentro detalles que no había visto pero que estaban ahí.', en: 'When I review a decision, I find details I had not seen but were there.' },
+    { cat: 'p', es: 'En reuniones, capto lo que confirma mi posición más rápido que lo que la cuestiona.', en: 'In meetings, I catch what confirms my position faster than what questions it.' },
+
+    { cat: 'i', es: 'Tengo una teoría preferida que aplico incluso cuando el caso no encaja del todo.', en: 'I have a favorite theory I apply even when the case does not quite fit.' },
+    { cat: 'i', es: 'Cuando un dato contradice mi modelo, primero dudo del dato.', en: 'When a datum contradicts my model, I first doubt the datum.' },
+    { cat: 'i', es: 'Confundo "explicar" con "comprender" más a menudo de lo que admito.', en: 'I confuse "explaining" with "understanding" more often than I admit.' },
+    { cat: 'i', es: 'Mi vocabulario técnico me protege de pensar con palabras del lenguaje común.', en: 'My technical vocabulary protects me from thinking in everyday-language terms.' },
+    { cat: 'i', es: 'Resisto cambiar de marco aunque vea grietas en el actual.', en: 'I resist changing framework even when I see cracks in the current one.' },
+
+    { cat: 'g', es: 'Hay preguntas que ni siquiera me planteo porque "no son del tipo que mi disciplina aborda".', en: 'There are questions I don\'t even pose because "they\'re not the kind my discipline addresses".' },
+    { cat: 'g', es: 'Lo que mi formación clasifica como "fuera de tema" rara vez me parece relevante.', en: 'What my training classifies as "off-topic" rarely seems relevant to me.' },
+    { cat: 'g', es: 'Cuando alguien de otra disciplina opina de la mía, suelo descartarlo como ingenuo.', en: 'When someone from another discipline opines on mine, I tend to dismiss them as naive.' },
+    { cat: 'g', es: 'Distingo claramente entre "ciencia" y "no ciencia" y prefiero la primera siempre.', en: 'I clearly distinguish between "science" and "non-science" and always prefer the former.' },
+    { cat: 'g', es: 'No me cuesta ver que un colega tiene un sesgo paradigmático; me cuesta verlo en mí.', en: 'I have no trouble seeing a colleague\'s paradigmatic bias; I struggle to see it in myself.' },
+  ];
+
+  function render() {
+    const lang = window.TRAMA_i18n.getLang();
+    const form = document.getElementById('form');
+    form.innerHTML = '';
+    const saved = JSON.parse(localStorage.getItem(SAVE) || '{}');
+    QUESTIONS.forEach((q, i) => {
+      const div = document.createElement('div');
+      div.className = 'question-card';
+      div.innerHTML = `
+        <div class="q-text">${i + 1}. ${q[lang]}</div>
+        <div class="scale-labels">
+          <span>${lang === 'es' ? 'no me describe' : 'does not describe me'}</span>
+          <span>${lang === 'es' ? 'me describe mucho' : 'describes me strongly'}</span>
+        </div>
+        <div class="scale-options">
+          ${[1,2,3,4,5].map(v => `
+            <label><input type="radio" name="q${i}" value="${v}" ${saved['q'+i] == v ? 'checked' : ''}>${v}</label>
+          `).join('')}
+        </div>
+      `;
+      form.appendChild(div);
+      div.querySelectorAll('input').forEach(inp => {
+        inp.addEventListener('change', () => {
+          const s = JSON.parse(localStorage.getItem(SAVE) || '{}');
+          s['q' + i] = parseInt(inp.value);
+          localStorage.setItem(SAVE, JSON.stringify(s));
+        });
+      });
+    });
+  }
+
+  function compute() {
+    const lang = window.TRAMA_i18n.getLang();
+    const saved = JSON.parse(localStorage.getItem(SAVE) || '{}');
+    const totals = { p: 0, i: 0, g: 0 };
+    const counts = { p: 0, i: 0, g: 0 };
+    QUESTIONS.forEach((q, i) => {
+      const v = saved['q' + i];
+      if (v) { totals[q.cat] += v; counts[q.cat]++; }
+    });
+    const labels = {
+      p: { es: 'Perceptiva', en: 'Perceptual' },
+      i: { es: 'Intelectual', en: 'Intellectual' },
+      g: { es: 'Paradigmática', en: 'Paradigmatic' }
+    };
+    const interp = {
+      p: { es: 'Tu mirada selecciona y arma activamente lo que crees ver. Practica volver a mirar lo mismo dos veces, en momentos distintos.',
+           en: 'Your gaze actively selects and assembles what you think you see. Practice looking at the same thing twice, at different moments.' },
+      i: { es: 'Tus marcos teóricos filtran lo que cuenta como dato. Practica plantear una hipótesis incompatible con tu marco habitual.',
+           en: 'Your theoretical frameworks filter what counts as data. Practice formulating a hypothesis incompatible with your usual framework.' },
+      g: { es: 'Tu paradigma decide qué merece ser preguntado. Practica conversar con alguien de una disciplina muy distante a la tuya.',
+           en: 'Your paradigm decides what deserves being asked. Practice talking with someone from a discipline far from yours.' }
+    };
+    const bars = document.getElementById('bars');
+    bars.innerHTML = '';
+    ['p', 'i', 'g'].forEach(c => {
+      const max = counts[c] * 5;
+      const pct = max ? Math.round((totals[c] / max) * 100) : 0;
+      const bar = document.createElement('div');
+      bar.className = 'result-bar';
+      bar.innerHTML = `
+        <div class="result-bar-label">
+          <span>${labels[c][lang]}</span>
+          <span>${pct}%</span>
+        </div>
+        <div class="result-bar-track"><div class="result-bar-fill" style="width:0%"></div></div>
+      `;
+      bars.appendChild(bar);
+      setTimeout(() => bar.querySelector('.result-bar-fill').style.width = pct + '%', 50);
+    });
+    // dominant
+    const dom = ['p', 'i', 'g'].sort((a, b) => (totals[b] / (counts[b] * 5)) - (totals[a] / (counts[a] * 5)))[0];
+    document.getElementById('interpretation').innerHTML = `
+      <strong>${lang === 'es' ? 'Tu ceguera más pronunciada:' : 'Your most pronounced blindness:'} ${labels[dom][lang]}</strong>
+      <br><br>
+      ${interp[dom][lang]}
+    `;
+    document.getElementById('results').classList.add('show');
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function reset() {
+    if (!confirm(window.TRAMA_i18n.getLang() === 'es' ? '¿Borrar tus respuestas?' : 'Delete your answers?')) return;
+    localStorage.removeItem(SAVE);
+    document.getElementById('results').classList.remove('show');
+    render();
+  }
+
+  ['compute','compute-en'].forEach(id => document.getElementById(id).addEventListener('click', compute));
+  ['reset','reset-en'].forEach(id => document.getElementById(id).addEventListener('click', reset));
+  document.addEventListener('langchange', render);
+  render();
+})();
+</script>
+</body>
+</html>

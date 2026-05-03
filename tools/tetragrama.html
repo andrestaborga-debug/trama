@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa del tetragrama · TRAMA</title>
+<link rel="stylesheet" href="../css/styles.css">
+<style>
+  .tetra-canvas {
+    position: relative;
+    width: 100%;
+    max-width: 640px;
+    aspect-ratio: 1;
+    margin: 2rem auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+  }
+  .tetra-pole {
+    position: absolute;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: var(--surface-alt);
+    border: 2px solid var(--accent);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0.5rem;
+    font-family: var(--serif);
+    color: var(--accent-dark);
+    transform: translate(-50%, -50%);
+  }
+  .tetra-pole .pole-label {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+  }
+  .tetra-pole .pole-sub {
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.2;
+    font-style: italic;
+  }
+  .tetra-pole.orden { top: 50%; left: 0%; }
+  .tetra-pole.desorden { top: 50%; left: 100%; }
+  .tetra-pole.interacciones { top: 0%; left: 50%; }
+  .tetra-pole.organizacion { top: 100%; left: 50%; }
+
+  .tetra-marker {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--ink);
+    border: 3px solid var(--surface);
+    transform: translate(-50%, -50%);
+    cursor: grab;
+    box-shadow: var(--shadow-md);
+    z-index: 10;
+    transition: transform 0.1s;
+  }
+  .tetra-marker:active { cursor: grabbing; transform: translate(-50%, -50%) scale(1.2); }
+  .tetra-marker::after {
+    content: 'tu situación';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 8px;
+    background: var(--ink);
+    color: var(--surface);
+    font-size: 0.7rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  html[lang="en"] .tetra-marker::after { content: 'your situation'; }
+
+  .tetra-axis {
+    position: absolute;
+    background: var(--border);
+  }
+  .tetra-axis.h { top: 50%; left: 10%; right: 10%; height: 1px; }
+  .tetra-axis.v { left: 50%; top: 10%; bottom: 10%; width: 1px; }
+
+  .field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+  .field {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+  }
+  .field label {
+    display: block;
+    font-family: var(--serif);
+    font-weight: 600;
+    color: var(--accent-dark);
+    margin-bottom: 0.4rem;
+  }
+  .field textarea {
+    width: 100%;
+    min-height: 80px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 0.5rem;
+    font-family: var(--sans);
+    font-size: 0.9rem;
+    resize: vertical;
+  }
+  .reading-panel {
+    background: var(--surface-alt);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-top: 2rem;
+    font-family: var(--serif);
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--ink);
+    min-height: 60px;
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="../index.html" class="brand">
+      <span class="brand-mark">TRAMA</span>
+      <span class="brand-tagline" data-lang="es">Taller de Pensamiento Complejo</span>
+      <span class="brand-tagline" data-lang="en">A Workshop on Complex Thinking</span>
+    </a>
+    <nav class="nav">
+      <a href="../index.html"><span data-lang="es">Programa</span><span data-lang="en">Program</span></a>
+      <a href="../index.html#herramientas"><span data-lang="es">Herramientas</span><span data-lang="en">Tools</span></a>
+      <div class="lang-toggle"><button data-lang="es">ES</button><button data-lang="en">EN</button></div>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="tool-header">
+  <div class="hero-eyebrow"><span data-lang="es">Herramienta · 02</span><span data-lang="en">Tool · 02</span></div>
+  <h1 data-lang="es">Mapa del tetragrama</h1>
+  <h1 data-lang="en">Tetragram map</h1>
+  <p class="muted" data-lang="es">Sitúa una situación entre los cuatro polos: orden, desorden, interacciones, organización. Arrastra el círculo.</p>
+  <p class="muted" data-lang="en">Place a situation among the four poles: order, disorder, interactions, organization. Drag the circle.</p>
+</div>
+
+<div class="tool-area">
+
+  <div class="field" style="margin-bottom:1rem;">
+    <label data-lang="es">Situación que estás analizando</label>
+    <label data-lang="en">Situation you are analyzing</label>
+    <textarea id="situacion" placeholder="..."></textarea>
+  </div>
+
+  <div class="tetra-canvas" id="canvas">
+    <div class="tetra-axis h"></div>
+    <div class="tetra-axis v"></div>
+    <div class="tetra-pole interacciones">
+      <span class="pole-label" data-lang="es">Interacciones</span>
+      <span class="pole-label" data-lang="en">Interactions</span>
+      <span class="pole-sub" data-lang="es">encuentros, comunicaciones</span>
+      <span class="pole-sub" data-lang="en">encounters, communications</span>
+    </div>
+    <div class="tetra-pole orden">
+      <span class="pole-label" data-lang="es">Orden</span>
+      <span class="pole-label" data-lang="en">Order</span>
+      <span class="pole-sub" data-lang="es">reglas, estructura</span>
+      <span class="pole-sub" data-lang="en">rules, structure</span>
+    </div>
+    <div class="tetra-pole desorden">
+      <span class="pole-label" data-lang="es">Desorden</span>
+      <span class="pole-label" data-lang="en">Disorder</span>
+      <span class="pole-sub" data-lang="es">azar, conflicto</span>
+      <span class="pole-sub" data-lang="en">chance, conflict</span>
+    </div>
+    <div class="tetra-pole organizacion">
+      <span class="pole-label" data-lang="es">Organización</span>
+      <span class="pole-label" data-lang="en">Organization</span>
+      <span class="pole-sub" data-lang="es">propiedad emergente</span>
+      <span class="pole-sub" data-lang="en">emergent property</span>
+    </div>
+    <div class="tetra-marker" id="marker" style="top:50%;left:50%;"></div>
+  </div>
+
+  <div class="reading-panel" id="reading">
+    <span data-lang="es"><em>Arrastra el círculo dentro del mapa para leer un diagnóstico.</em></span>
+    <span data-lang="en"><em>Drag the circle inside the map to read a diagnostic.</em></span>
+  </div>
+
+  <h3 data-lang="es" style="margin-top:2rem;">Anota qué ves en cada polo</h3>
+  <h3 data-lang="en" style="margin-top:2rem;">Note what you see in each pole</h3>
+
+  <div class="field-grid">
+    <div class="field">
+      <label data-lang="es">Orden — qué sostiene</label>
+      <label data-lang="en">Order — what sustains</label>
+      <textarea data-journal-key="tetra-orden" placeholder="..."></textarea>
+    </div>
+    <div class="field">
+      <label data-lang="es">Desorden — qué atraviesa</label>
+      <label data-lang="en">Disorder — what crosses through</label>
+      <textarea data-journal-key="tetra-desorden" placeholder="..."></textarea>
+    </div>
+    <div class="field">
+      <label data-lang="es">Interacciones — quiénes se encuentran</label>
+      <label data-lang="en">Interactions — who meets whom</label>
+      <textarea data-journal-key="tetra-inter" placeholder="..."></textarea>
+    </div>
+    <div class="field">
+      <label data-lang="es">Organización — qué emerge</label>
+      <label data-lang="en">Organization — what emerges</label>
+      <textarea data-journal-key="tetra-org" placeholder="..."></textarea>
+    </div>
+  </div>
+
+  <p class="tool-status"></p>
+
+  <div class="tool-controls" style="margin-top:2rem;">
+    <button class="btn" id="reset" data-lang="es">↻ Reiniciar</button>
+    <button class="btn" id="reset-en" data-lang="en">↻ Reset</button>
+    <a href="../sessions/sesion-08.html" class="btn btn-outline">
+      <span data-lang="es">← Volver a sesión 08</span>
+      <span data-lang="en">← Back to session 08</span>
+    </a>
+  </div>
+</div>
+</main>
+
+<script src="../js/i18n.js"></script>
+<script src="../js/app.js"></script>
+<script>
+(function(){
+  const canvas = document.getElementById('canvas');
+  const marker = document.getElementById('marker');
+  const reading = document.getElementById('reading');
+  const SAVE_KEY = 'trama_tetra_pos';
+
+  function readingFor(x, y, lang) {
+    // x: 0 (order) to 1 (disorder); y: 0 (interactions) to 1 (organization)
+    const ord = 1 - x, dis = x;
+    const inter = 1 - y, orga = y;
+    const dominant = [
+      { name: 'orden', es: 'orden', en: 'order', val: ord },
+      { name: 'desorden', es: 'desorden', en: 'disorder', val: dis },
+      { name: 'interacciones', es: 'interacciones', en: 'interactions', val: inter },
+      { name: 'organizacion', es: 'organización', en: 'organization', val: orga }
+    ].sort((a, b) => b.val - a.val);
+
+    const top = dominant[0], second = dominant[1];
+
+    const textsES = {
+      'orden+interacciones': 'Una zona de <strong>orden con encuentros vivos</strong>: estructura clara y diálogo activo. Riesgo: que el orden ahogue las interacciones nuevas.',
+      'orden+organizacion': 'Una zona <strong>institucional consolidada</strong>: la organización está cristalizada en orden. Riesgo: petrificación. Necesita una dosis productiva de desorden.',
+      'orden+desorden': 'Tensión productiva entre lo regulado y lo imprevisible. Atento a la <strong>regulación dialógica</strong>: ni rigidez ni caos.',
+      'desorden+interacciones': 'Zona <strong>creativa y agitada</strong>: muchos encuentros, poca estructura. Bueno para innovar; vigila el agotamiento.',
+      'desorden+organizacion': 'Una organización emergente atravesada por azar. <strong>Adaptable pero frágil</strong>: documenta lo que descubres antes de que se pierda.',
+      'interacciones+organizacion': 'Encuentros que producen propiedades emergentes. Sigue así: cuida la <em>frecuencia</em> y la <em>diversidad</em> de las interacciones.',
+      'interacciones+orden': 'Interacciones bien sostenidas por estructura. <strong>Equilibrio fértil</strong>; el reto es no rigidizarse.',
+      'organizacion+orden': 'Lo organizado tiende a lo cristalizado. Pregúntate: ¿qué desorden estás eliminando que era necesario?',
+      'organizacion+desorden': 'La organización emerge de la turbulencia. <strong>Estás en territorio de aprendizaje</strong>: nombra lo que va apareciendo.',
+      'organizacion+interacciones': 'Organización viva alimentada por encuentros. Régimen saludable.',
+      'desorden+orden': 'Oscilación entre control y caos. Quizás necesitas un mecanismo de regulación más fino.',
+      'interacciones+desorden': 'Encuentros sin contención: chispa y dispersión. Decide qué quieres conservar.',
+    };
+    const textsEN = {
+      'orden+interacciones': 'A zone of <strong>order with living encounters</strong>: clear structure and active dialogue. Risk: that order suffocates new interactions.',
+      'orden+organizacion': '<strong>Consolidated institutional</strong> zone: the organization is crystallized in order. Risk: petrification. Needs a productive dose of disorder.',
+      'orden+desorden': 'Productive tension between regulated and unpredictable. Watch the <strong>dialogic regulation</strong>: neither rigidity nor chaos.',
+      'desorden+interacciones': '<strong>Creative and agitated</strong> zone: many encounters, little structure. Good for innovating; watch for burnout.',
+      'desorden+organizacion': 'An emergent organization crossed by chance. <strong>Adaptable but fragile</strong>: document what you discover before it is lost.',
+      'interacciones+organizacion': 'Encounters that produce emergent properties. Keep going: care for the <em>frequency</em> and <em>diversity</em> of interactions.',
+      'interacciones+orden': 'Interactions well sustained by structure. <strong>Fertile balance</strong>; the challenge is not to rigidify.',
+      'organizacion+orden': 'The organized tends toward the crystallized. Ask: what disorder are you eliminating that was necessary?',
+      'organizacion+desorden': 'Organization emerges from turbulence. <strong>You are in learning territory</strong>: name what is appearing.',
+      'organizacion+interacciones': 'Living organization fed by encounters. Healthy regime.',
+      'desorden+orden': 'Oscillation between control and chaos. Perhaps you need a finer regulation mechanism.',
+      'interacciones+desorden': 'Encounters without containment: spark and dispersion. Decide what you want to keep.',
+    };
+
+    const key = top.name + '+' + second.name;
+    const txt = (lang === 'es' ? textsES : textsEN)[key] || (lang === 'es'
+      ? `Tu situación se inclina hacia <strong>${top.es}</strong> y <strong>${second.es}</strong>.`
+      : `Your situation leans toward <strong>${top.en}</strong> and <strong>${second.en}</strong>.`);
+    return txt;
+  }
+
+  function updateReading(x, y) {
+    const lang = window.TRAMA_i18n.getLang();
+    reading.innerHTML = readingFor(x, y, lang);
+  }
+
+  function setPos(xPct, yPct) {
+    xPct = Math.max(8, Math.min(92, xPct));
+    yPct = Math.max(8, Math.min(92, yPct));
+    marker.style.left = xPct + '%';
+    marker.style.top = yPct + '%';
+    localStorage.setItem(SAVE_KEY, JSON.stringify({ x: xPct, y: yPct }));
+    updateReading(xPct / 100, yPct / 100);
+  }
+
+  function loadPos() {
+    try {
+      const p = JSON.parse(localStorage.getItem(SAVE_KEY));
+      if (p && typeof p.x === 'number') {
+        setPos(p.x, p.y);
+        return;
+      }
+    } catch {}
+    setPos(50, 50);
+  }
+
+  let dragging = false;
+  function startDrag(e) {
+    dragging = true;
+    e.preventDefault();
+  }
+  function endDrag() { dragging = false; }
+  function moveDrag(e) {
+    if (!dragging) return;
+    const rect = canvas.getBoundingClientRect();
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    const xPct = ((cx - rect.left) / rect.width) * 100;
+    const yPct = ((cy - rect.top) / rect.height) * 100;
+    setPos(xPct, yPct);
+  }
+
+  marker.addEventListener('mousedown', startDrag);
+  marker.addEventListener('touchstart', startDrag, { passive: false });
+  document.addEventListener('mouseup', endDrag);
+  document.addEventListener('touchend', endDrag);
+  document.addEventListener('mousemove', moveDrag);
+  document.addEventListener('touchmove', moveDrag, { passive: false });
+
+  canvas.addEventListener('click', e => {
+    if (e.target === marker) return;
+    const rect = canvas.getBoundingClientRect();
+    const xPct = ((e.clientX - rect.left) / rect.width) * 100;
+    const yPct = ((e.clientY - rect.top) / rect.height) * 100;
+    setPos(xPct, yPct);
+  });
+
+  document.getElementById('reset').addEventListener('click', () => setPos(50, 50));
+  document.getElementById('reset-en').addEventListener('click', () => setPos(50, 50));
+  document.addEventListener('langchange', () => {
+    const p = JSON.parse(localStorage.getItem(SAVE_KEY) || '{"x":50,"y":50}');
+    updateReading(p.x / 100, p.y / 100);
+  });
+
+  // Load situacion field
+  const sit = document.getElementById('situacion');
+  sit.value = localStorage.getItem('trama_journal_tetra-situacion') || '';
+  let timer;
+  sit.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => localStorage.setItem('trama_journal_tetra-situacion', sit.value), 500);
+  });
+
+  loadPos();
+})();
+</script>
+</body>
+</html>

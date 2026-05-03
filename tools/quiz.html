@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autoevaluación por módulo · TRAMA</title>
+<link rel="stylesheet" href="../css/styles.css">
+<style>
+  .module-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .module-tab {
+    padding: 0.6rem 1.1rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-family: var(--sans);
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    transition: all 0.2s;
+  }
+  .module-tab:hover { border-color: var(--accent); }
+  .module-tab.active { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+
+  .module-section { display: none; }
+  .module-section.active { display: block; }
+
+  .quiz-q {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .quiz-q-text {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    line-height: 1.5;
+    color: var(--ink);
+    margin-bottom: 1rem;
+  }
+  .quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .quiz-option {
+    display: block;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    background: var(--bg);
+    transition: all 0.15s;
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
+  .quiz-option:hover { border-color: var(--accent); background: var(--surface-alt); }
+  .quiz-option input { margin-right: 0.6rem; }
+  .quiz-q.answered .quiz-option { cursor: default; pointer-events: none; }
+  .quiz-q.answered .quiz-option.correct { background: #DCE7D5; border-color: #5C7A4F; }
+  .quiz-q.answered .quiz-option.wrong { background: #FCE7E7; border-color: #B85450; }
+  .feedback {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    display: none;
+  }
+  .quiz-q.answered .feedback { display: block; }
+  .score-display {
+    background: var(--surface-alt);
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    text-align: center;
+    margin-top: 2rem;
+    font-family: var(--serif);
+  }
+  .score-display strong { font-size: 2rem; color: var(--accent-dark); }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="../index.html" class="brand">
+      <span class="brand-mark">TRAMA</span>
+      <span class="brand-tagline" data-lang="es">Taller de Pensamiento Complejo</span>
+      <span class="brand-tagline" data-lang="en">A Workshop on Complex Thinking</span>
+    </a>
+    <nav class="nav">
+      <a href="../index.html"><span data-lang="es">Programa</span><span data-lang="en">Program</span></a>
+      <a href="../index.html#herramientas"><span data-lang="es">Herramientas</span><span data-lang="en">Tools</span></a>
+      <div class="lang-toggle"><button data-lang="es">ES</button><button data-lang="en">EN</button></div>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="tool-header">
+  <div class="hero-eyebrow"><span data-lang="es">Herramienta · 08</span><span data-lang="en">Tool · 08</span></div>
+  <h1 data-lang="es">Autoevaluación por módulo</h1>
+  <h1 data-lang="en">Module self-assessment</h1>
+  <p class="muted" data-lang="es">No es para calificarte. Es para verificar que las ideas centrales se asentaron — y, sobre todo, para revelar lo que aún no.</p>
+  <p class="muted" data-lang="en">Not to grade you. To verify the central ideas have settled — and, above all, to reveal what hasn't yet.</p>
+</div>
+
+<div class="tool-area">
+
+  <div class="module-tabs">
+    <button class="module-tab active" data-module="1">Módulo I</button>
+    <button class="module-tab" data-module="2">Módulo II</button>
+    <button class="module-tab" data-module="3">Módulo III</button>
+    <button class="module-tab" data-module="4">Módulo IV</button>
+    <button class="module-tab" data-module="5">Módulo V</button>
+    <button class="module-tab" data-module="6">Módulo VI</button>
+  </div>
+
+  <div id="quiz-container"></div>
+
+  <div class="score-display" id="score" style="display:none;"></div>
+
+  <div class="tool-controls" style="margin-top:2rem;">
+    <button class="btn" id="check" data-lang="es">Verificar respuestas</button>
+    <button class="btn" id="check-en" data-lang="en">Check answers</button>
+    <button class="btn btn-outline" id="reset" data-lang="es">↻ Reiniciar módulo</button>
+    <button class="btn btn-outline" id="reset-en" data-lang="en">↻ Reset module</button>
+  </div>
+
+</div>
+</main>
+
+<script src="../js/i18n.js"></script>
+<script src="../js/app.js"></script>
+<script>
+(function(){
+  const QUIZZES = {
+    1: [
+      {
+        es: 'La diferencia esencial entre un problema "complicado" y uno "complejo" es:',
+        en: 'The essential difference between a "complicated" and a "complex" problem is:',
+        opts: {
+          es: ['El número de variables involucradas', 'Que el complejo no es decomponible sin pérdida porque sus propiedades emergen de la interacción', 'Que el complicado requiere más tiempo'],
+          en: ['The number of variables involved', 'The complex is not decomposable without loss because its properties emerge from interaction', 'The complicated requires more time']
+        },
+        correct: 1,
+        feedback: {
+          es: 'Un reloj suizo es complicado: si lo desarmas y entiendes cada pieza, lo comprendes. Una ciudad es compleja: ningún habitante aislado revela la ciudad.',
+          en: 'A Swiss watch is complicated: take it apart and understand each piece, and you understand it. A city is complex: no isolated inhabitant reveals the city.'
+        }
+      },
+      {
+        es: 'Las tres operaciones del paradigma simplificador son:',
+        en: 'The three operations of the simplifying paradigm are:',
+        opts: {
+          es: ['Análisis, síntesis y evaluación', 'Disyunción, reducción y abstracción', 'Observación, hipótesis y experimento'],
+          en: ['Analysis, synthesis, and evaluation', 'Disjunction, reduction, and abstraction', 'Observation, hypothesis, and experiment']
+        },
+        correct: 1,
+        feedback: {
+          es: 'Disyunción separa lo unido; reducción explica lo complejo por lo simple; abstracción separa el objeto del contexto.',
+          en: 'Disjunction separates what is joined; reduction explains the complex by the simple; abstraction separates object from context.'
+        }
+      },
+      {
+        es: 'La "ceguera paradigmática" es:',
+        en: '"Paradigmatic blindness" is:',
+        opts: {
+          es: ['No tener teoría suficiente', 'No ver lo que el propio paradigma no permite plantear como pregunta', 'Tener prejuicios morales'],
+          en: ['Not having enough theory', 'Not seeing what one\'s paradigm does not allow as a question', 'Having moral prejudices']
+        },
+        correct: 1,
+        feedback: {
+          es: 'No vemos el paradigma porque vemos a través de él. Por eso es el más profundo de los puntos ciegos.',
+          en: 'We don\'t see the paradigm because we see through it. That\'s why it\'s the deepest blindspot.'
+        }
+      }
+    ],
+    2: [
+      {
+        es: 'El principio dialógico se distingue de la dialéctica hegeliana porque:',
+        en: 'The dialogic principle differs from Hegelian dialectic because:',
+        opts: {
+          es: ['Es más reciente', 'No busca síntesis: deja la contradicción activa, productiva, irresuelta', 'Sólo se aplica al diálogo entre personas'],
+          en: ['It is more recent', 'It seeks no synthesis: it leaves the contradiction active, productive, unresolved', 'It only applies to dialogue between people']
+        },
+        correct: 1,
+        feedback: {
+          es: 'Habitar la tensión, no resolverla. Esa es la operación dialógica.',
+          en: 'Inhabit the tension, do not resolve it. That is the dialogic operation.'
+        }
+      },
+      {
+        es: 'Causalidad recursiva significa que:',
+        en: 'Recursive causality means that:',
+        opts: {
+          es: ['Una causa produce muchos efectos', 'Los efectos retroalimentan la causa amortiguándola', 'Los productos y efectos son al mismo tiempo causas y productores de aquello que los produce'],
+          en: ['A cause produces many effects', 'Effects feed back to dampen the cause', 'Products and effects are at once causes and producers of what produces them']
+        },
+        correct: 2,
+        feedback: {
+          es: 'La sociedad produce individuos que producen la sociedad. No hay punto de origen separable. Eso es recursividad.',
+          en: 'Society produces individuals who produce society. No separable origin. That is recursivity.'
+        }
+      },
+      {
+        es: 'Los cuatro polos del tetragrama son:',
+        en: 'The four poles of the tetragram are:',
+        opts: {
+          es: ['Sujeto / objeto / método / resultado', 'Orden / desorden / interacciones / organización', 'Pasado / presente / futuro / eternidad'],
+          en: ['Subject / object / method / result', 'Order / disorder / interactions / organization', 'Past / present / future / eternity']
+        },
+        correct: 1,
+        feedback: {
+          es: 'Cada uno necesita a los otros para existir. Eliminar uno mutila el sistema.',
+          en: 'Each needs the others to exist. Eliminating one mutilates the system.'
+        }
+      }
+    ],
+    3: [
+      {
+        es: 'La fórmula corregida por Morin es:',
+        en: 'Morin\'s corrected formula is:',
+        opts: {
+          es: ['El todo es la suma de las partes', 'El todo es más que la suma de las partes', 'El todo es a la vez más y menos que la suma de las partes'],
+          en: ['The whole is the sum of its parts', 'The whole is more than the sum of its parts', 'The whole is at once more AND less than the sum of its parts']
+        },
+        correct: 2,
+        feedback: {
+          es: '«Más» por las emergencias, «menos» porque las restricciones del todo limitan a las partes.',
+          en: '"More" because of emergences, "less" because the whole\'s constraints limit the parts.'
+        }
+      },
+      {
+        es: 'Auto-eco-organización quiere decir:',
+        en: 'Auto-eco-organization means:',
+        opts: {
+          es: ['Sistemas que sólo dependen de sí mismos', 'Sistemas que se hacen a sí mismos dependiendo constitutivamente de su entorno', 'Sistemas autosuficientes'],
+          en: ['Systems that depend only on themselves', 'Systems that make themselves while constitutively depending on their environment', 'Self-sufficient systems']
+        },
+        correct: 1,
+        feedback: {
+          es: 'Autonomía no es ausencia de dependencia: es calidad de dependencia.',
+          en: 'Autonomy is not absence of dependence: it is quality of dependence.'
+        }
+      },
+      {
+        es: '"Reliance" es:',
+        en: '"Reliance" is:',
+        opts: {
+          es: ['Confiar en los demás', 'Acto de religar lo que la separación había desunido', 'Ser fiable en el trabajo'],
+          en: ['Trusting others', 'Act of re-linking what separation had disjoined', 'Being reliable at work']
+        },
+        correct: 1,
+        feedback: {
+          es: 'Reliance es el verbo del sujeto complejo: religa al otro, al mundo, a sí mismo.',
+          en: 'Reliance is the verb of the complex subject: re-links other, world, self.'
+        }
+      }
+    ],
+    4: [
+      {
+        es: 'Los cuatro principios del conocimiento pertinente son:',
+        en: 'The four principles of pertinent knowledge are:',
+        opts: {
+          es: ['Verdad / utilidad / belleza / bondad', 'Contexto / global / multidimensional / complejo', 'Análisis / síntesis / aplicación / verificación'],
+          en: ['Truth / utility / beauty / goodness', 'Context / global / multidimensional / complex', 'Analysis / synthesis / application / verification']
+        },
+        correct: 1,
+        feedback: {
+          es: 'Más datos no producen pertinencia: situarlos sí.',
+          en: 'More data does not produce pertinence: situating it does.'
+        }
+      },
+      {
+        es: 'La trinidad humana de Morin es:',
+        en: 'Morin\'s human trinity is:',
+        opts: {
+          es: ['Cuerpo / mente / espíritu', 'Especie / individuo / sociedad', 'Razón / emoción / voluntad'],
+          en: ['Body / mind / spirit', 'Species / individual / society', 'Reason / emotion / will']
+        },
+        correct: 1,
+        feedback: {
+          es: 'Tres términos co-productores. Cualquier reducción de uno a otro mutila al humano.',
+          en: 'Three co-producing terms. Any reduction of one to another mutilates the human.'
+        }
+      },
+      {
+        es: 'La diferencia entre incertidumbre, ignorancia y riesgo es:',
+        en: 'The difference among uncertainty, ignorance, and risk is:',
+        opts: {
+          es: ['Sólo importa la incertidumbre', 'Incertidumbre = no se puede saber; ignorancia = todavía no sabemos; riesgo = probabilidades conocidas', 'Son sinónimos en la práctica'],
+          en: ['Only uncertainty matters', 'Uncertainty = cannot be known; ignorance = not yet known; risk = known probabilities', 'They are synonyms in practice']
+        },
+        correct: 1,
+        feedback: {
+          es: 'Distinguirlos cambia tu estrategia: investigación, predicción o sostener la apertura.',
+          en: 'Distinguishing them changes your strategy: research, prediction, or sustaining openness.'
+        }
+      }
+    ],
+    5: [
+      {
+        es: 'El liderazgo complejo se caracteriza por:',
+        en: 'Complex leadership is characterized by:',
+        opts: {
+          es: ['Controlar más variables', 'Diseñar condiciones para emergencias deseables, no prescribir resultados', 'Ser carismático y decisivo'],
+          en: ['Controlling more variables', 'Designing conditions for desirable emergences, not prescribing results', 'Being charismatic and decisive']
+        },
+        correct: 1,
+        feedback: {
+          es: 'Su poder es generativo, no prescriptivo. Reconoce qué no puede controlar.',
+          en: 'Its power is generative, not prescriptive. It recognizes what it cannot control.'
+        }
+      },
+      {
+        es: 'Las tres patologías del pensamiento político simplificador son:',
+        en: 'The three pathologies of simplifying political thinking are:',
+        opts: {
+          es: ['Apatía, polarización y populismo', 'Reducción a causa única, maniqueísmo y mesianismo de soluciones', 'Burocracia, corrupción y clientelismo'],
+          en: ['Apathy, polarization, and populism', 'Reduction to single cause, manichaeism, and solution-messianism', 'Bureaucracy, corruption, and clientelism']
+        },
+        correct: 1,
+        feedback: {
+          es: 'Las tres comparten la promesa de simplificar lo que es estructuralmente complejo.',
+          en: 'All three share the promise of simplifying what is structurally complex.'
+        }
+      },
+      {
+        es: 'Una decisión ética se distingue de una decisión técnica porque:',
+        en: 'An ethical decision differs from a technical one because:',
+        opts: {
+          es: ['Es más importante', 'Los objetivos mismos están en disputa, hay valores en conflicto, las consecuencias son irreversibles', 'Requiere más tiempo'],
+          en: ['It is more important', 'The objectives themselves are in dispute, values conflict, consequences are irreversible', 'It requires more time']
+        },
+        correct: 1,
+        feedback: {
+          es: 'Por eso ningún cálculo basta: hay que asumir como sujeto.',
+          en: 'That is why no calculation suffices: one must assume as subject.'
+        }
+      }
+    ],
+    6: [
+      {
+        es: 'La reforma del pensamiento es:',
+        en: 'Reform of thinking is:',
+        opts: {
+          es: ['Cambiar el contenido de las ideas', 'Cambiar la forma de tener ideas — los principios que las organizan', 'Aprender vocabulario nuevo'],
+          en: ['Changing the content of ideas', 'Changing the form of holding ideas — the principles that organize them', 'Learning new vocabulary']
+        },
+        correct: 1,
+        feedback: {
+          es: 'Por eso es paradigmática, no temática. Y se nota en las decisiones, no en el vocabulario.',
+          en: 'That\'s why it\'s paradigmatic, not thematic. And it shows in decisions, not vocabulary.'
+        }
+      },
+      {
+        es: 'La ética de la comprensión exige:',
+        en: 'The ethics of understanding demands:',
+        opts: {
+          es: ['Estar de acuerdo con el otro', 'Ponerse en la posición desde la que el comportamiento del otro tiene sentido, sin que ello implique aprobarlo', 'Ser tolerante con todo'],
+          en: ['Agreeing with the other', 'Placing oneself in the position from which the other\'s behavior makes sense, without this implying approval', 'Being tolerant of everything']
+        },
+        correct: 1,
+        feedback: {
+          es: 'Comprender no anula el juicio: lo precede y lo afina.',
+          en: 'Understanding does not annul judgment: it precedes and refines it.'
+        }
+      },
+      {
+        es: 'La antropoética, según Morin, supone:',
+        en: 'Anthropoethics, according to Morin, supposes:',
+        opts: {
+          es: ['Un código moral universal', 'Asumir conscientemente la trinidad individuo / sociedad / especie y la responsabilidad en cada plano', 'Aplicar normas éticas a la antropología'],
+          en: ['A universal moral code', 'Consciously assuming the trinity individual / society / species and responsibility on each plane', 'Applying ethical norms to anthropology']
+        },
+        correct: 1,
+        feedback: {
+          es: 'No es un decálogo: es una posición consciente del sujeto en su condición humana compleja.',
+          en: 'Not a decalogue: a conscious position of the subject in their complex human condition.'
+        }
+      }
+    ]
+  };
+
+  let currentModule = 1;
+  let answers = {}; // { '1-0': 1, '1-1': 2, ... }
+
+  function loadAnswers() {
+    try { answers = JSON.parse(localStorage.getItem('trama_quiz') || '{}'); } catch { answers = {}; }
+  }
+  function saveAnswers() { localStorage.setItem('trama_quiz', JSON.stringify(answers)); }
+
+  function render() {
+    const lang = window.TRAMA_i18n.getLang();
+    const container = document.getElementById('quiz-container');
+    container.innerHTML = '';
+    const qs = QUIZZES[currentModule];
+    qs.forEach((q, i) => {
+      const div = document.createElement('div');
+      div.className = 'quiz-q';
+      const ansKey = currentModule + '-' + i;
+      const userAns = answers[ansKey];
+      const isAnswered = userAns !== undefined && userAns !== null && answers[ansKey + '-checked'];
+      if (isAnswered) div.classList.add('answered');
+      div.innerHTML = `
+        <div class="quiz-q-text">${i + 1}. ${q[lang]}</div>
+        <div class="quiz-options">
+          ${q.opts[lang].map((opt, j) => {
+            let cls = 'quiz-option';
+            if (isAnswered) {
+              if (j === q.correct) cls += ' correct';
+              else if (j === userAns) cls += ' wrong';
+            }
+            return `<label class="${cls}"><input type="radio" name="q${i}" value="${j}" ${userAns === j ? 'checked' : ''}>${opt}</label>`;
+          }).join('')}
+        </div>
+        <div class="feedback">${isAnswered ? (userAns === q.correct ? '✓ ' : '✗ ') + q.feedback[lang] : ''}</div>
+      `;
+      container.appendChild(div);
+      div.querySelectorAll('input').forEach(inp => {
+        inp.addEventListener('change', () => {
+          answers[ansKey] = parseInt(inp.value);
+          delete answers[ansKey + '-checked'];
+          saveAnswers();
+        });
+      });
+    });
+    document.getElementById('score').style.display = 'none';
+  }
+
+  function check() {
+    const lang = window.TRAMA_i18n.getLang();
+    const qs = QUIZZES[currentModule];
+    let correct = 0;
+    qs.forEach((q, i) => {
+      const ansKey = currentModule + '-' + i;
+      if (answers[ansKey] === q.correct) correct++;
+      answers[ansKey + '-checked'] = true;
+    });
+    saveAnswers();
+    render();
+    const score = document.getElementById('score');
+    score.style.display = 'block';
+    score.innerHTML = lang === 'es'
+      ? `<strong>${correct} / ${qs.length}</strong><br>${correct === qs.length ? 'Excelente — el módulo está bien asentado.' : correct >= qs.length / 2 ? 'Vas bien. Vuelve a las sesiones de las que no acertaste.' : 'Te conviene volver a las sesiones del módulo antes de seguir.'}`
+      : `<strong>${correct} / ${qs.length}</strong><br>${correct === qs.length ? 'Excellent — this module is well settled.' : correct >= qs.length / 2 ? 'Going well. Return to the sessions you missed.' : 'It is worth returning to the module\'s sessions before continuing.'}`;
+  }
+
+  function reset() {
+    if (!confirm(window.TRAMA_i18n.getLang() === 'es' ? '¿Reiniciar este módulo?' : 'Reset this module?')) return;
+    QUIZZES[currentModule].forEach((_, i) => {
+      delete answers[currentModule + '-' + i];
+      delete answers[currentModule + '-' + i + '-checked'];
+    });
+    saveAnswers();
+    render();
+  }
+
+  document.querySelectorAll('.module-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.module-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentModule = parseInt(tab.dataset.module);
+      render();
+    });
+  });
+
+  ['check','check-en'].forEach(id => document.getElementById(id).addEventListener('click', check));
+  ['reset','reset-en'].forEach(id => document.getElementById(id).addEventListener('click', reset));
+  document.addEventListener('langchange', render);
+
+  loadAnswers();
+  render();
+})();
+</script>
+</body>
+</html>
